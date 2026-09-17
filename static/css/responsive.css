@@ -1,0 +1,73 @@
+/* Responsive Layout Adaptations for Desktop, Tablet & Mobile */
+
+@media (max-width: 1200px) {
+    .grid-top-row {
+        grid-template-columns: 1fr;
+    }
+    .grid-three-col {
+        grid-template-columns: 1fr 1fr;
+    }
+    .hero-metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-header {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+    }
+    .search-container {
+        order: 3;
+        width: 100%;
+        max-width: 100%;
+    }
+    .dashboard-container {
+        padding: 1rem;
+        gap: 1.25rem;
+    }
+    .grid-two-col, .grid-three-col {
+        grid-template-columns: 1fr;
+    }
+    .temp-value {
+        font-size: 3.5rem;
+    }
+    .hero-body {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .weather-condition-badge {
+        align-items: flex-start;
+    }
+    .hero-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .daily-row {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .daily-condition {
+        width: 100%;
+    }
+    .map-card-wrapper {
+        height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    .aqi-gauge-wrapper {
+        flex-direction: column;
+        text-align: center;
+    }
+    .pollutants-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .sun-moon-grid {
+        grid-template-columns: 1fr;
+    }
+}

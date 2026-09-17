@@ -1,0 +1,68 @@
+/* SkyCast Design System Tokens & Modern CSS Variables */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Fonts */
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    /* Theme Colors (Default Dark - Modern Deep Glassmorphism) */
+    --bg-gradient: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+    --bg-color: #0B0F19;
+    --card-bg: rgba(30, 41, 59, 0.65);
+    --card-bg-hover: rgba(47, 63, 90, 0.75);
+    --card-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    
+    --accent-blue: #38BDF8;
+    --accent-cyan: #06B6D4;
+    --accent-purple: #8B5CF6;
+    --accent-amber: #F59E0B;
+    --accent-emerald: #10B981;
+    --accent-rose: #F43F5E;
+    
+    --input-bg: rgba(15, 23, 42, 0.6);
+    --input-border: rgba(255, 255, 255, 0.15);
+    --input-text: #F8FAFC;
+
+    /* AQI Colors */
+    --aqi-good: #10B981;
+    --aqi-moderate: #F59E0B;
+    --aqi-unhealthy-sensitive: #F97316;
+    --aqi-unhealthy: #EF4444;
+    --aqi-very-unhealthy: #8B5CF6;
+    --aqi-hazardous: #991B1B;
+
+    /* Layout Spacing */
+    --border-radius-lg: 20px;
+    --border-radius-md: 14px;
+    --border-radius-sm: 8px;
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light Theme Variables */
+[data-theme="light"] {
+    --bg-gradient: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 50%, #F8FAFC 100%);
+    --bg-color: #F8FAFC;
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --card-bg-hover: rgba(255, 255, 255, 0.95);
+    --card-border: rgba(226, 232, 240, 0.9);
+    --glass-shadow: 0 8px 24px 0 rgba(148, 163, 184, 0.15);
+    
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    
+    --accent-blue: #0284C7;
+    --accent-cyan: #0891B2;
+    --accent-purple: #7C3AED;
+    
+    --input-bg: rgba(241, 245, 249, 0.9);
+    --input-border: rgba(203, 213, 225, 0.9);
+    --input-text: #0F172A;
+}

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyCast - Weather & Air Quality Intelligence Platform</title>
+    <meta name="description" content="Production-quality environmental intelligence platform providing real-time weather, 7-day forecasts, air quality index, interactive maps, and historical analytics.">
+    
+    <!-- CSS Dependencies & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Application Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+
+    <!-- JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="app-header">
+        <div class="brand-logo">
+            <i class="fa-solid => fa-cloud-bolt"></i>
+            <span>SkyCast</span>
+        </div>
+
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="city-search-input" placeholder="Search city or location (e.g., Tokyo, New York, Paris)..." autocomplete="off">
+                <button class="geo-btn" id="geo-btn" title="Use Current GPS Location">
+                    <i class="fa-solid fa-crosshairs"></i>
+                </button>
+            </div>
+            <div class="search-results-dropdown" id="search-results-dropdown"></div>
+        </div>
+
+        <div class="header-actions">
+            <!-- Favorite Cities Toggle -->
+            <button class="pill-btn" id="favorites-toggle-btn">
+                <i class="fa-solid fa-heart"></i>
+                <span>Favorites</span>
+            </button>
+
+            <!-- City Comparison Toggle -->
+            <button class="pill-btn" id="compare-toggle-btn">
+                <i class="fa-solid fa-code-compare"></i>
+                <span>Compare</span>
+            </button>
+
+            <!-- Unit System Switcher -->
+            <button class="pill-btn" id="unit-toggle-btn" title="Toggle °C / °F">
+                <span id="unit-toggle-text">°C / °F</span>
+            </button>
+
+            <!-- Theme Toggle Button -->
+            <button class="pill-btn theme-toggle-pill" id="theme-toggle-btn" title="Toggle Light / Dark Mode">
+                <i class="fa-solid fa-moon" id="theme-icon" style="color: var(--accent-blue);"></i>
+                <span id="theme-text-label">Dark Mode</span>
+            </button>
+
+            <!-- User Profile / Auth Modal -->
+            <button class="primary-btn" id="auth-modal-btn">
+                <i class="fa-solid fa-user"></i>
+                <span id="auth-btn-label">Sign In</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <main class="dashboard-container">
+        
+        <!-- Weather Alerts Section -->
+        <div class="alerts-banner-container" id="alerts-container"></div>
+
+        <!-- 1. Current Weather & Air Quality Row -->
+        <section class="grid-top-row">
+            <!-- Current Weather Hero Card -->
+            <div class="glass-card weather-hero-card" id="weather-hero-card">
+                <div class="weather-atmosphere-overlay" id="weather-atmosphere-overlay"></div>
+                <div class="hero-header">
+                    <div class="location-info">
+                        <h2 id="current-city-name">Loading Weather...</h2>
+                        <div class="date-subtitle" id="current-date-time">Fetching environment details...</div>
+                    </div>
+                    <button class="icon-btn" id="add-favorite-btn" title="Save Location to Favorites">
+                        <i class="fa-far fa-heart" id="favorite-heart-icon"></i>
+                    </button>
+                </div>
+
+                <div class="hero-body">
+                    <div class="temp-large-wrapper">
+                        <div class="temp-value" id="current-temp">--</div>
+                        <div class="temp-unit-symbol" id="current-temp-unit">°C</div>
+                    </div>
+                    <div class="weather-condition-badge">
+                        <img src="https://openweathermap.org/img/wn/02d@2x.png" alt="weather condition" class="weather-icon-img" id="weather-icon-img">
+                        <div class="condition-text" id="current-condition">--</div>
+                        <div class="feels-like-text" id="current-feels-like">Feels like --</div>
+                    </div>
+                </div>
+
+                <div class="hero-metrics-grid">
+                    <div class="metric-box">
+                        <span class="label"><i class="fa-solid fa-droplet"></i> Humidity</span>
+                        <span class="val" id="metric-humidity">--%</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label"><i class="fa-solid fa-gauge-high"></i> Pressure</span>
+                        <span class="val" id="metric-pressure">-- hPa</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label"><i class="fa-solid fa-eye"></i> Visibility</span>
+                        <span class="val" id="metric-visibility">-- km</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label"><i class="fa-solid fa-cloud"></i> Cloud Cover</span>
+                        <span class="val" id="metric-clouds">--%</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label"><i class="fa-solid fa-temperature-arrow-down"></i> Dew Point</span>
+                        <span class="val" id="metric-dewpoint">--</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="label"><i class="fa-solid fa-sun"></i> UV Index</span>
+                        <span class="val" id="metric-uv">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Air Quality Card -->
+            <div class="glass-card aqi-card">
+                <div class="section-title">
+                    <i class="fa-solid fa-smog"></i>
+                    <span>Air Quality Index (AQI)</span>
+                </div>
+
+                <div class="aqi-gauge-wrapper">
+                    <div class="aqi-score-circle" id="aqi-score-circle">
+                        <div class="aqi-score-num" id="aqi-num">--</div>
+                        <div class="aqi-score-label">US AQI</div>
+                    </div>
+                    <div class="aqi-status-info">
+                        <h3 id="aqi-category-title">Loading AQI...</h3>
+                        <p id="aqi-recommendation">Air quality information is updating...</p>
+                    </div>
+                </div>
+
+                <div class="pollutants-grid">
+                    <div class="pollutant-chip">
+                        <div class="p-name">PM2.5</div>
+                        <div class="p-val" id="pol-pm25">--</div>
+                    </div>
+                    <div class="pollutant-chip">
+                        <div class="p-name">PM10</div>
+                        <div class="p-val" id="pol-pm10">--</div>
+                    </div>
+                    <div class="pollutant-chip">
+                        <div class="p-name">NO2</div>
+                        <div class="p-val" id="pol-no2">--</div>
+                    </div>
+                    <div class="pollutant-chip">
+                        <div class="p-name">O3</div>
+                        <div class="p-val" id="pol-o3">--</div>
+                    </div>
+                    <div class="pollutant-chip">
+                        <div class="p-name">SO2</div>
+                        <div class="p-val" id="pol-so2">--</div>
+                    </div>
+                    <div class="pollutant-chip">
+                        <div class="p-name">CO</div>
+                        <div class="p-val" id="pol-co">--</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Forecast Section: Hourly Timeline & 7-Day Forecast -->
+        <section class="grid-two-col">
+            <!-- 24-Hour Forecast Scroller -->
+            <div class="glass-card">
+                <div class="section-title">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>Hourly Forecast (Next 24 Hours)</span>
+                </div>
+                <div class="hourly-timeline" id="hourly-timeline-container">
+                    <!-- Dynamic hourly cards rendered here -->
+                </div>
+            </div>
+
+            <!-- 7-Day Forecast -->
+            <div class="glass-card">
+                <div class="section-title">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>7-Day Weather Outlook</span>
+                </div>
+                <div class="daily-forecast-list" id="daily-forecast-container">
+                    <!-- Dynamic 7-day cards rendered here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Wind Compass & Sun/Moon Intelligence -->
+        <section class="grid-two-col">
+            <!-- Wind Card with Compass -->
+            <div class="glass-card">
+                <div class="section-title">
+                    <i class="fa-solid fa-wind"></i>
+                    <span>Wind Intelligence & Compass</span>
+                </div>
+                <div class="wind-compass-container">
+                    <div class="compass-dial">
+                        <div class="compass-label compass-n">N</div>
+                        <div class="compass-label compass-e">E</div>
+                        <div class="compass-label compass-s">S</div>
+                        <div class="compass-label compass-w">W</div>
+                        <div class="compass-arrow" id="compass-arrow"></div>
+                    </div>
+                    <div class="wind-stats-box">
+                        <div class="metric-box">
+                            <span class="label">Wind Speed</span>
+                            <span class="val" id="wind-speed-val">--</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="label">Wind Direction</span>
+                            <span class="val" id="wind-dir-val">--°</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="label">Wind Gusts</span>
+                            <span class="val" id="wind-gust-val">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sun & Moon Information Card -->
+            <div class="glass-card">
+                <div class="section-title">
+                    <i class="fa-solid fa-sun"></i>
+                    <span>Solar & Lunar Cycles</span>
+                </div>
+                <div class="sun-moon-grid">
+                    <div class="sun-box">
+                        <h4><i class="fa-solid fa-sun" style="color: #F59E0B;"></i> Sun Schedule</h4>
+                        <div class="sun-times">
+                            <span><i class="fa-solid fa-sun-plant-wilt"></i> Sunrise: <strong id="sun-sunrise">--</strong></span>
+                            <span><i class="fa-solid fa-moon"></i> Sunset: <strong id="sun-sunset">--</strong></span>
+                        </div>
+                    </div>
+                    <div class="moon-box">
+                        <h4><i class="fa-solid fa-moon" style="color: #38BDF8;"></i> Moon Phase</h4>
+                        <div class="sun-times">
+                            <span>Phase: <strong id="moon-phase">--</strong></span>
+                            <span>Illumination: <strong id="moon-illumination">--%</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Historical Analytics & Multi-Metric Charts -->
+        <section class="glass-card">
+            <div class="section-title" style="justify-content: space-between;">
+                <div>
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Environmental Analytics & Trends</span>
+                </div>
+                <div class="header-actions">
+                    <button class="pill-btn active" id="chart-tab-temp">Temp</button>
+                    <button class="pill-btn" id="chart-tab-aqi">AQI</button>
+                    <button class="pill-btn" id="chart-tab-humidity">Humidity</button>
+                    <button class="pill-btn" id="chart-tab-wind">Wind</button>
+                    <button class="pill-btn" id="chart-tab-rain">Rain</button>
+                </div>
+            </div>
+            <div style="height: 340px; position: relative;">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </section>
+
+        <!-- 6. Interactive Leaflet Map -->
+        <section class="glass-card map-card-wrapper">
+            <div class="map-controls-overlay">
+                <button class="pill-btn" id="map-tile-standard">Standard Map</button>
+                <button class="pill-btn" id="map-tile-dark">Dark Overlay</button>
+            </div>
+            <div id="map"></div>
+        </section>
+    </main>
+
+    <!-- Modal: City Comparison -->
+    <div class="modal-overlay" id="compare-modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-code-compare"></i> City Environmental Comparison</h3>
+                <button class="modal-close-btn" id="compare-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="form-group" style="flex-direction: row; gap: 0.5rem;">
+                <input type="text" id="compare-city-input" placeholder="Enter city name to compare (e.g., Tokyo, London)..." style="flex:1;">
+                <button class="primary-btn" id="compare-add-btn">Add City</button>
+            </div>
+            <div id="compare-cities-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <!-- Dynamically populated comparison cards -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Favorites Manager -->
+    <div class="modal-overlay" id="favorites-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-heart" style="color: #F43F5E;"></i> Saved Favorite Locations</h3>
+                <button class="modal-close-btn" id="favorites-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="favorites-list-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <!-- Saved locations list -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: User Authentication -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="auth-modal-title">Sign In to SkyCast</h3>
+                <button class="modal-close-btn" id="auth-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="auth-form">
+                <div class="form-group" id="username-group" style="display: none;">
+                    <label>Username</label>
+                    <input type="text" id="auth-username-input" placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label>Email or Username</label>
+                    <input type="text" id="auth-email-input" placeholder="Enter your email or username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="auth-password-input" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="primary-btn" style="width: 100%; margin-top: 1rem;" id="auth-submit-btn">Sign In</button>
+            </form>
+            <div style="text-align: center; margin-top: 1rem; font-size: 0.88rem;">
+                <span id="auth-switch-text">Don't have an account?</span>
+                <a href="#" id="auth-switch-link" style="font-weight: 700; margin-left: 0.25rem;">Register Now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frontend JavaScript Modules (ES6) -->
+    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
